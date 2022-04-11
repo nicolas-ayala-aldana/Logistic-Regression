@@ -1,0 +1,113 @@
+---
+title: "Logistic Regression"
+author: "Nicolas Ayala"
+date: "10-04-2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Logistic Regression.
+This study is an example of a binary logistic regression, which uses the ISLR package and it will provide the data set, and the glm() function, which is generally used to fit generalized linear models, will be used to fit the logistic regression model.
+
+## About dataset.
+This tutorial show Smarket dataset within RStudio. The data set shows the daily percentage returns of the S&P 500 stock index between 2001 and 2005. <br<>
+Reference: https://www.datacamp.com/community/tutorials/logistic-regression-R#logistic-regression
+```{r}
+#Load Package
+require(ISLR)
+
+#View of variables and summary of descriptive statistics.
+names(Smarket)
+summary(Smarket)
+
+#Distribution histogram.
+par(mfrow=c(1,8))
+for(i in 1:8) {
+    hist(Smarket[,i], main=names(Smarket)[i])
+}
+
+
+```
+
+#Corrplot of Smarket
+```{r}
+#Corrplot for each variable. There is a linear correlation between variables of the study.
+library(corrplot)
+correlations <- cor(Smarket[,1:8])
+corrplot(correlations, method="circle")
+```
+
+
+```{r}
+library(caret)
+x <- Smarket[,1:8]
+y <- Smarket[,9]
+scales <- list(x=list(relation="free"), y=list(relation="free"))
+featurePlot(x=x, y=y, plot="density", scales=scales)
+```
+
+
+Logistic Regression Model
+```{r}
+# Logistics Regression. P-value is greater than level of statistical significance.
+glm.fit <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Smarket, family = binomial)
+summary((glm.fit))
+
+#Model of Probability.Create a vector of probabilities with five options
+glm.probs <- predict(glm.fit,type = "response")
+glm.probs[1:5]
+
+
+#Now It is a prediction of whether the market will be up or down based on the lags and other predictors. In particular, It  turn the probabilities into classifications by thresholding at 0.5. In order to do so, I use an ifelse() command.
+glm.pred <- ifelse(glm.probs > 0.5, "Up", "Down")
+
+#glm.pred is a vector of trues and falses. If glm.probs is bigger than 0.5, glm.pred calls "Up"; otherwise, it calls "False".
+```
+
+
+```{r}
+#Here, attach the Smarket data frame and create a table of glm.pred, which are the ups and downs of the previous address. You also take the mean of those.
+attach(Smarket)
+table(glm.pred,Direction)
+
+#Training model.
+# Make training and test set
+train = Year<2005
+glm.fit <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume,
+               data = Smarket,
+               family = binomial,
+               subset = train)
+
+glm.probs <- predict(glm.fit,
+                    newdata = Smarket[!train,],
+                    type = "response")
+
+glm.pred <- ifelse(glm.probs > 0.5, "Up", "Down")
+```
+
+Creating a new variable
+```{r}
+Direction.2005 = Smarket$Direction[!train]
+table(glm.pred, Direction.2005)
+mean(glm.pred == Direction.2005)
+```
+
+```{r}
+# Fit a smaller model
+glm.fit = glm(Direction ~ Lag1 + Lag2 + Lag3, data = Smarket, family = binomial, subset = train)
+glm.probs = predict(glm.fit, newdata = Smarket[!train,], type = "response")
+glm.pred = ifelse(glm.probs > 0.5, "Up", "Down")
+table(glm.pred, Direction.2005)
+
+
+mean(glm.pred == Direction.2005)# A clasifitcation rate of 50%
+```
+
+Summary of Ajusted Model with 3 variables.
+```{r}
+summary(glm.fit)
+```
+

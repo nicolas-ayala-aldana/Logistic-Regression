@@ -1,0 +1,4 @@
+"0","for(i in 1:8) {"
+"0","    boxplot(Smarket[,i], main=names(Smarket)[i])"
+"0","}"
+"0",""

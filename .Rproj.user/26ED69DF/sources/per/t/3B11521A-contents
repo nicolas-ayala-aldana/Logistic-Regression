@@ -1,0 +1,61 @@
+---
+title: "Logistic Regression"
+author: "Nicolas Ayala"
+date: "10-04-2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+#Load Package
+require(ISLR)
+
+#View of variables and summary of descriptive statistics.
+names(Smarket)
+summary(Smarket)
+
+#Distribution histogram.
+par(mfrow=c(1,8))
+for(i in 1:8) {
+    hist(Smarket[,i], main=names(Smarket)[i])
+}
+
+
+```
+
+#Corrplot of Smarket
+```{r}
+#Corrplot for each variable. There is a linear correlation between variables of the study.
+library(corrplot)
+correlations <- cor(Smarket[,1:8])
+corrplot(correlations, method="circle")
+```
+
+
+```{r}
+library(caret)
+x <- Smarket[,1:8]
+y <- Smarket[,9]
+scales <- list(x=list(relation="free"), y=list(relation="free"))
+featurePlot(x=x, y=y, plot="density", scales=scales)
+```
+
+
+Logistic Regression Model
+```{r}
+# Logistics Regression. P-value is greater than level of statistical significance.
+glm.fit <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Smarket, family = binomial)
+summary((glm.fit))
+
+#Model of Probability.
+glm.probs <- predict(glm.fit,type = "response")
+glm.probs[1:5]
+
+glm.pred <- ifelse(glm.probs > 0.5, "Up", "Down")
+```
+

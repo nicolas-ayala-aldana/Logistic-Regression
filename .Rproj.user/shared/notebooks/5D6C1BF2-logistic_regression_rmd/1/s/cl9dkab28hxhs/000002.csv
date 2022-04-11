@@ -1,0 +1,3 @@
+"0","library(corrplot)"
+"0","correlations <- cor(Smarket[,1:8])"
+"0","corrplot(correlations, method=""circle"")"
